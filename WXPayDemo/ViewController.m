@@ -7,7 +7,7 @@
 //
 
 #import "ViewController.h"
-#import "WXApi.h"
+#import "AppDelegate.h"
 
 @interface ViewController ()
 
@@ -15,50 +15,73 @@
 
 @implementation ViewController
 
-- (IBAction)makeWXPay:(UIButton *)sender {
-    NSString *res = [self makeAWXPay];
-    NSLog(@"%@", res);
+- (NSDictionary *)makeDemoWXPay {
+    NSMutableDictionary *dict = [NSJSONSerialization JSONObjectWithData:[NSURLConnection sendSynchronousRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:@"http://wxpay.weixin.qq.com/pub_v2/app/app_pay.php?plat=ios"]] returningResponse:nil error:nil] options:NSJSONReadingMutableLeaves error:nil];
+    NSDictionary *dictionary = @{@"partnerId":dict[@"partnerid"],
+                                 @"prepayId":dict[@"prepayid"],
+                                 @"nonceStr":dict[@"noncestr"],
+                                 @"timeStamp":dict[@"timestamp"],
+                                 @"package":dict[@"package"],
+                                 @"sign":dict[@"sign"]
+                                 };
+    return dictionary;
 }
 
-- (NSString *)makeAWXPay {
-    NSString *urlString   = @"http://wxpay.weixin.qq.com/pub_v2/app/app_pay.php?plat=ios";
-    //解析服务端返回json数据
-    NSError *error;
-    //加载一个NSURL对象
-    NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:urlString]];
-    //将请求的url数据放到NSData对象中
-    NSData *response = [NSURLConnection sendSynchronousRequest:request returningResponse:nil error:nil];
-    if ( response != nil) {
-        NSMutableDictionary *dict = NULL;
-        //IOS5自带解析类NSJSONSerialization从response中解析出数据放到字典中
-        dict = [NSJSONSerialization JSONObjectWithData:response options:NSJSONReadingMutableLeaves error:&error];
-        
-        NSLog(@"url:%@",urlString);
-        if(dict != nil){
-            NSMutableString *retcode = [dict objectForKey:@"retcode"];
-            if (retcode.intValue == 0){
-                NSMutableString *stamp  = [dict objectForKey:@"timestamp"];
-                
-                //调起微信支付
-                PayReq* req             = [[PayReq alloc] init];
-                req.partnerId           = [dict objectForKey:@"partnerid"];
-                req.prepayId            = [dict objectForKey:@"prepayid"];
-                req.nonceStr            = [dict objectForKey:@"noncestr"];
-                req.timeStamp           = stamp.intValue;
-                req.package             = [dict objectForKey:@"package"];
-                req.sign                = [dict objectForKey:@"sign"];
-                [WXApi sendReq:req];
-                //日志输出
-                NSLog(@"appid=%@\npartid=%@\nprepayid=%@\nnoncestr=%@\ntimestamp=%ld\npackage=%@\nsign=%@",[dict objectForKey:@"appid"],req.partnerId,req.prepayId,req.nonceStr,(long)req.timeStamp,req.package,req.sign );
-                return @"";
-            }else{
-                return [dict objectForKey:@"retmsg"];
-            }
-        }else{
-            return @"服务器返回错误，未获取到json对象";
+- (IBAction)makeWXPay:(UIButton *)sender {
+    [self configureWXApiDelegate];
+    NSDictionary *dictionary = [self makeDemoWXPay];
+    [self makeWXPayWithDictionary:dictionary];
+}
+
+- (void)configureWXApiDelegate {
+    AppDelegate *appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
+    appDelegate.wxApiDelegate = self;
+}
+
+- (void)makeWXPayWithDictionary:(NSDictionary *)dictionary {
+    if (dictionary[@"partnerId"] && dictionary[@"prepayId"] &&
+        dictionary[@"nonceStr"] && dictionary[@"timeStamp"] &&
+        dictionary[@"package"] && dictionary[@"sign"]) {
+        PayReq* req             = [PayReq new];
+        req.partnerId           = dictionary[@"partnerId"];
+        req.prepayId            = dictionary[@"prepayId"];
+        req.nonceStr            = dictionary[@"nonceStr"];
+        req.timeStamp           = [dictionary[@"timeStamp"] intValue];
+        req.package             = dictionary[@"package"];
+        req.sign                = dictionary[@"sign"];
+        [WXApi sendReq:req];
+    } else {
+        NSLog(@"Wrong format dictionary!");
+    }
+}
+
+#pragma mark - WXApiDelegate
+
+- (void)onResp:(BaseResp*)resp {
+    if ([resp isKindOfClass: [PayResp class]]){
+        switch(resp.errCode){
+            case WXSuccess:
+                NSLog(@"成功");
+                break;
+            case WXErrCodeCommon:
+                NSLog(@"普通错误类型");
+                break;
+            case WXErrCodeUserCancel:
+                NSLog(@"用户点击取消并返回");
+                break;
+            case WXErrCodeSentFail:
+                NSLog(@"发送失败");
+                break;
+            case WXErrCodeAuthDeny:
+                NSLog(@"授权失败");
+                break;
+            case WXErrCodeUnsupport:
+                NSLog(@"微信不支持");
+                break;
+            default:
+                NSLog(@"支付失败，retcode=%d", resp.errCode);
+                break;
         }
-    }else{
-        return @"服务器返回错误";
     }
 }
 

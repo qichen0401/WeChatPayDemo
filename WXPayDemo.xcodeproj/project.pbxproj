@@ -55,12 +55,12 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				C05B23101DE43D6500B98A2F /* libc++.tbd in Frameworks */,
-				C05B23081DE43B1D00B98A2F /* libz.tbd in Frameworks */,
 				C05B23061DE43B1000B98A2F /* CoreTelephony.framework in Frameworks */,
-				C05B23041DE43AFC00B98A2F /* SystemConfiguration.framework in Frameworks */,
-				C05B23001DE43AC500B98A2F /* libsqlite3.0.tbd in Frameworks */,
 				C05B22FE1DE43A3700B98A2F /* CFNetwork.framework in Frameworks */,
+				C05B23041DE43AFC00B98A2F /* SystemConfiguration.framework in Frameworks */,
+				C05B23101DE43D6500B98A2F /* libc++.tbd in Frameworks */,
+				C05B23001DE43AC500B98A2F /* libsqlite3.0.tbd in Frameworks */,
+				C05B23081DE43B1D00B98A2F /* libz.tbd in Frameworks */,
 				C05B22FA1DE4390600B98A2F /* libWeChatSDK.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -392,6 +392,7 @@
 				C05B22F31DE438AC00B98A2F /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

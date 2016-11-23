@@ -7,7 +7,6 @@
 //
 
 #import "AppDelegate.h"
-#import "WXApi.h"
 
 @interface AppDelegate ()
 
@@ -51,5 +50,18 @@
     // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
 }
 
+- (BOOL)application:(UIApplication *)application handleOpenURL:(NSURL *)url {
+    if ([WXApi handleOpenURL:url delegate:self.wxApiDelegate]) {
+        return true;
+    }
+    return false;
+}
+
+- (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation {
+    if ([WXApi handleOpenURL:url delegate:self.wxApiDelegate]) {
+        return true;
+    }
+    return false;
+}
 
 @end
