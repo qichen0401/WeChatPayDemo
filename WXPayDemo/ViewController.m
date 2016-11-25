@@ -15,7 +15,7 @@
 
 @implementation ViewController
 
-- (NSDictionary *)makeDemoWXPay {
+- (NSDictionary *)createDemoWXPayData {
     NSMutableDictionary *dict = [NSJSONSerialization JSONObjectWithData:[NSURLConnection sendSynchronousRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:@"http://wxpay.weixin.qq.com/pub_v2/app/app_pay.php?plat=ios"]] returningResponse:nil error:nil] options:NSJSONReadingMutableLeaves error:nil];
     NSDictionary *dictionary = @{@"partnerId":dict[@"partnerid"],
                                  @"prepayId":dict[@"prepayid"],
@@ -29,7 +29,7 @@
 
 - (IBAction)makeWXPay:(UIButton *)sender {
     [self configureWXApiDelegate];
-    NSDictionary *dictionary = [self makeDemoWXPay];
+    NSDictionary *dictionary = [self createDemoWXPayData];
     [self makeWXPayWithDictionary:dictionary];
 }
 
